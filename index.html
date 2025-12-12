@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jessie Math - 比例尺冒險(進階版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Nunito:wght@800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0f9ff;
+            background-image: radial-gradient(#bae6fd 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .brand-font { font-family: 'Nunito', sans-serif; }
+        .hidden-section { display: none !important; }
+        .game-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .btn-bounce:active { transform: scale(0.95); }
+
+        /* 動畫特效 */
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .star-pop { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-20px); opacity: 0; }
+        }
+        .combo-text {
+            position: absolute;
+            font-weight: 900;
+            color: #fbbf24;
+            text-shadow: 2px 2px 0px #b45309;
+            animation: floatUp 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* 答錯時的震動 */
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-24 pb-4 px-4">
+
+    <nav class="fixed top-0 left-0 w-full bg-white shadow-sm z-50 py-2 px-4 md:px-8 flex justify-between items-center h-20 transition-all">
+        <div class="flex items-center gap-3">
+            <div class="relative w-12 h-12 rounded-full border-[3px] border-orange-400 p-0.5 bg-white flex-shrink-0 overflow-hidden">
+                <img src="JESSIEMATH-Q.png" onerror="this.src='https://ui-avatars.com/api/?name=JM&background=random'" alt="Jessie Logo" class="w-full h-full object-cover rounded-full">
+            </div>
+            <span class="brand-font text-2xl md:text-3xl font-extrabold text-[#1e293b] tracking-tight">
+                Jessie Math
+            </span>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="https://jessiemath0703-chu.github.io/website2/" class="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition text-sm font-bold no-underline">
+                <i class="fas fa-home text-gray-500"></i>
+                <span>首頁</span>
+            </a>
+
+            <a href="https://jessiemath0703-chu.github.io/Game-Lobby/" class="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition text-sm font-bold no-underline">
+                <i class="fas fa-desktop text-gray-500"></i>
+                <span>遊戲大廳</span>
+            </a>
+
+            <a href="https://jessiemath0703-chu.github.io/Game-Lobby/" class="flex items-center gap-2 px-5 py-2.5 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition text-sm font-bold no-underline">
+                <i class="fas fa-chevron-left"></i>
+                <span>六年級放大縮小與比例尺</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="game-card w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border-4 border-white relative flex flex-col" style="height: calc(100vh - 120px); min-height: 600px;">
+
+        <div id="start-screen" class="flex-1 flex flex-col items-center justify-center p-6 space-y-4">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-blue-800 tracking-wider mb-1">比例尺大冒險</h1>
+                <div class="h-1 w-20 bg-orange-400 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="bg-blue-50 w-full rounded-2xl p-4 border-2 border-blue-100 shadow-sm">
+                <h3 class="text-center font-bold text-blue-800 mb-3 border-b border-blue-200 pb-2">
+                    <i class="fas fa-scroll mr-1"></i> 冒險規則
+                </h3>
+                <div class="space-y-3 text-sm md:text-base text-gray-700">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 flex-shrink-0 font-bold">
+                            <i class="fas fa-cube"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-blue-700">遊戲內容</span>
+                            <p class="text-xs text-gray-500">挑戰放大縮小、比例尺與地圖計算。</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center text-green-700 flex-shrink-0 font-bold">
+                            <i class="fas fa-stopwatch"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-green-700">限時挑戰</span>
+                            <p class="text-xs text-gray-500">每局 <span class="font-bold text-red-500">60秒</span>，答對獎勵 <span class="font-bold text-green-600">+2秒</span>。</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 flex-shrink-0 font-bold">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-yellow-600">連擊計分</span>
+                            <p class="text-xs text-gray-500">連續答對啟動 <span class="font-bold text-orange-500">Combo</span>，分數會加倍！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full space-y-3 pt-2">
+                <input type="text" id="player-name" placeholder="請輸入你的名字" 
+                    class="w-full px-6 py-3 rounded-xl border-2 border-blue-200 text-center text-lg focus:border-blue-500 focus:outline-none transition bg-white/50">
+                
+                <button onclick="goToMenu()" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transform transition btn-bounce text-xl flex items-center justify-center gap-2">
+                    開始冒險 <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="instruction-modal" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm flex flex-col overflow-hidden animate-fade-in-up">
+                <div class="bg-blue-600 p-4 text-white text-center font-bold text-xl relative">
+                    <i class="fas fa-info-circle mr-2"></i> 詳細說明
+                    <button onclick="hideInstructions()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-blue-200 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-6 space-y-4 text-gray-700 text-sm md:text-base overflow-y-auto max-h-[60vh]">
+                    <p>除了首頁提到的規則，請注意：</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>答錯不會扣分，但會中斷 Combo 連擊。</li>
+                        <li>困難模式的分數是普通模式的 1.5 倍。</li>
+                        <li>第三關「錯誤實驗室」需要更仔細觀察地圖數據喔！</li>
+                    </ul>
+                </div>
+                <div class="p-4 border-t border-gray-100">
+                    <button onclick="hideInstructions()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">了解！</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="menu-screen" class="hidden-section flex-1 flex flex-col p-6 h-full">
+            <header class="flex justify-between items-center mb-4 flex-shrink-0">
+                <div>
+                    <p class="text-gray-500 text-xs">你好，冒險者</p>
+                    <h2 id="display-name" class="text-xl font-bold text-blue-800 truncate max-w-[150px]">玩家</h2>
+                </div>
+                <div class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                    <i class="fas fa-trophy mr-1"></i> 排行榜
+                </div>
+            </header>
+
+            <div class="flex justify-center space-x-2 mb-6 flex-shrink-0">
+                <button id="btn-normal" onclick="setDifficulty('normal')" class="flex-1 py-2 text-sm rounded-lg font-bold border-2 transition bg-green-50 text-green-700 border-green-400">普通</button>
+                <button id="btn-hard" onclick="setDifficulty('hard')" class="flex-1 py-2 text-sm rounded-lg font-bold border-2 transition text-gray-400 border-gray-200">困難 (分數x1.5)</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-6 flex-shrink-0">
+                <button onclick="startGame(1)" class="p-3 bg-white border-2 border-blue-50 rounded-xl hover:border-blue-400 hover:shadow-md transition text-left group relative overflow-hidden">
+                    <div class="absolute -right-2 -bottom-2 text-6xl opacity-5">🦕</div>
+                    <div class="text-2xl mb-1 group-hover:scale-110 transition inline-block">🔭</div>
+                    <div class="font-bold text-gray-700 text-sm">巨人國</div>
+                    <div class="text-[10px] text-gray-400">放大與倍數</div>
+                </button>
+                <button onclick="startGame(2)" class="p-3 bg-white border-2 border-blue-50 rounded-xl hover:border-blue-400 hover:shadow-md transition text-left group relative overflow-hidden">
+                    <div class="absolute -right-2 -bottom-2 text-6xl opacity-5">🐜</div>
+                    <div class="text-2xl mb-1 group-hover:scale-110 transition inline-block">🔍</div>
+                    <div class="font-bold text-gray-700 text-sm">螞蟻國</div>
+                    <div class="text-[10px] text-gray-400">縮小與比例</div>
+                </button>
+                <button onclick="startGame(3)" class="p-3 bg-white border-2 border-blue-50 rounded-xl hover:border-blue-400 hover:shadow-md transition text-left group relative overflow-hidden">
+                    <div class="absolute -right-2 -bottom-2 text-6xl opacity-5">🧪</div>
+                    <div class="text-2xl mb-1 group-hover:scale-110 transition inline-block">🗺️</div>
+                    <div class="font-bold text-gray-700 text-sm">錯誤實驗室</div>
+                    <div class="text-[10px] text-gray-400">地圖與實測</div>
+                </button>
+                <button onclick="startGame(4)" class="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl transition text-left relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-2 opacity-20 text-4xl">?</div>
+                    <div class="text-2xl mb-1">⚡</div>
+                    <div class="font-bold text-sm">時空混亂</div>
+                    <div class="text-[10px] text-purple-200">綜合挑戰</div>
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl p-3 border border-gray-100 flex-1 overflow-y-auto min-h-0">
+                <h3 class="text-xs font-bold text-gray-400 uppercase mb-2 sticky top-0 bg-white pb-1">冒險者排行</h3>
+                <ul id="leaderboard-list" class="space-y-2 text-xs text-gray-600">
+                    <li class="text-center text-gray-400 py-4">暫無紀錄</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="game-screen" class="hidden-section flex-1 flex flex-col relative h-full">
+            <div class="bg-blue-600 p-3 text-white flex justify-between items-center shadow-md z-10 flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <button onclick="pauseGame()" class="hover:bg-blue-500 p-2 rounded-lg transition"><i class="fas fa-pause"></i></button>
+                    <div>
+                        <div class="text-[10px] text-blue-200" id="level-title">Level 1</div>
+                        <div class="font-bold text-lg leading-none"><i class="fas fa-star text-yellow-300 mr-1"></i> <span id="score-display">0</span></div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="text-2xl font-mono font-bold bg-blue-800 px-3 py-1 rounded-lg border border-blue-400 min-w-[3ch] text-center" id="timer-display">60</div>
+                </div>
+            </div>
+
+            <div class="flex-1 p-4 flex flex-col justify-center items-center bg-white overflow-hidden relative">
+                <div id="combo-container" class="absolute top-1/4 left-1/2 transform -translate-x-1/2 z-0"></div>
+
+                <div class="text-6xl mb-4 animate-bounce z-10" id="question-image">🔭</div>
+                <h3 class="text-lg md:text-2xl font-bold text-center text-gray-800 leading-relaxed z-10 max-w-md" id="question-text">
+                    題目載入中...
+                </h3>
+            </div>
+
+            <div class="p-3 bg-gray-50 rounded-t-3xl border-t border-gray-200 flex-shrink-0 z-20">
+                <div id="options-grid" class="grid grid-cols-2 gap-2 md:gap-3">
+                </div>
+            </div>
+
+            <div id="pause-modal" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div class="bg-white p-6 rounded-2xl shadow-2xl w-3/4 max-w-sm text-center">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">遊戲暫停</h2>
+                    <div class="space-y-3">
+                        <button onclick="resumeGame()" class="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-bold"><i class="fas fa-play mr-2"></i> 繼續</button>
+                        <button onclick="restartGame()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-xl font-bold"><i class="fas fa-redo mr-2"></i> 重新開始</button>
+                        <button onclick="backToMenu(true)" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-600 py-3 rounded-xl font-bold"><i class="fas fa-home mr-2"></i> 回選單</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="result-screen" class="hidden-section flex-1 flex flex-col items-center justify-center p-8 text-center bg-gradient-to-b from-blue-50 to-white">
+            <div id="stars-container" class="flex justify-center gap-2 mb-4 h-16">
+            </div>
+            
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">冒險結束！</h2>
+            <p class="text-gray-500 mb-6">玩家：<span id="result-name" class="font-bold text-blue-600"></span></p>
+            
+            <div class="bg-white p-6 rounded-2xl shadow-xl border-2 border-blue-100 w-full mb-6 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 text-gray-50 opacity-20 text-9xl rotate-12"><i class="fas fa-crown"></i></div>
+                <p class="text-sm text-gray-400 uppercase tracking-wide">最終得分</p>
+                <p class="text-5xl font-black text-blue-600 mt-2" id="final-score">0</p>
+            </div>
+
+            <div class="flex gap-3 w-full">
+                <button onclick="backToMenu(false)" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold py-3 rounded-xl transition">
+                    回大廳
+                </button>
+                <button onclick="restartGame()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg btn-bounce transition">
+                    再玩一次
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 遊戲狀態管理 ---
+        let gameState = {
+            playerName: '',
+            difficulty: 'normal',
+            currentLevel: 1,
+            score: 0,
+            timeLeft: 60,
+            isPlaying: false,
+            isPaused: false,
+            timerInterval: null,
+            combo: 0
+        };
+
+        let leaderboard = JSON.parse(localStorage.getItem('jessieMathLeaderboard')) || [];
+
+        // --- 畫面切換邏輯 ---
+        const screens = {
+            start: document.getElementById('start-screen'),
+            menu: document.getElementById('menu-screen'),
+            game: document.getElementById('game-screen'),
+            result: document.getElementById('result-screen')
+        };
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(el => el.classList.add('hidden-section'));
+            screens[screenName].classList.remove('hidden-section');
+            if(screenName === 'menu') renderLeaderboard();
+        }
+
+        // --- 遊戲流程控制 ---
+        function goToMenu() {
+            const nameInput = document.getElementById('player-name').value.trim();
+            if (!nameInput) {
+                alert("請輸入名字才能開始冒險喔！");
+                return;
+            }
+            gameState.playerName = nameInput;
+            document.getElementById('display-name').textContent = gameState.playerName;
+            showScreen('menu');
+        }
+
+        function setDifficulty(diff) {
+            gameState.difficulty = diff;
+            const btnNormal = document.getElementById('btn-normal');
+            const btnHard = document.getElementById('btn-hard');
+            
+            if (diff === 'normal') {
+                btnNormal.className = "flex-1 py-2 text-sm rounded-lg font-bold border-2 transition bg-green-50 text-green-700 border-green-400";
+                btnHard.className = "flex-1 py-2 text-sm rounded-lg font-bold border-2 transition text-gray-400 border-gray-200";
+            } else {
+                btnNormal.className = "flex-1 py-2 text-sm rounded-lg font-bold border-2 transition text-gray-400 border-gray-200";
+                btnHard.className = "flex-1 py-2 text-sm rounded-lg font-bold border-2 transition bg-red-50 text-red-700 border-red-400";
+            }
+        }
+
+        function startGame(level) {
+            gameState.currentLevel = level;
+            gameState.score = 0;
+            gameState.timeLeft = 60;
+            gameState.isPlaying = true;
+            gameState.isPaused = false;
+            gameState.combo = 0;
+            
+            const titles = ["第一關：巨人國", "第二關：螞蟻國", "第三關：錯誤實驗室", "第四關：時空混亂"];
+            document.getElementById('level-title').textContent = titles[level - 1] || "綜合挑戰";
+            
+            updateUI();
+            showScreen('game');
+            nextQuestion();
+            
+            if(gameState.timerInterval) clearInterval(gameState.timerInterval);
+            gameState.timerInterval = setInterval(gameLoop, 1000); 
+        }
+
+        function gameLoop() {
+            if(!gameState.isPaused) {
+                gameState.timeLeft--;
+                updateUI();
+                if(gameState.timeLeft <= 0) endGame();
+            }
+        }
+
+        function pauseGame() {
+            gameState.isPaused = true;
+            document.getElementById('pause-modal').classList.remove('hidden');
+        }
+
+        function resumeGame() {
+            gameState.isPaused = false;
+            document.getElementById('pause-modal').classList.add('hidden');
+        }
+
+        function restartGame() {
+            document.getElementById('pause-modal').classList.add('hidden');
+            startGame(gameState.currentLevel); // 重新開始同一關
+        }
+
+        function backToMenu(skipSave) {
+            clearInterval(gameState.timerInterval);
+            document.getElementById('pause-modal').classList.add('hidden');
+            showScreen('menu');
+        }
+
+        function endGame() {
+            clearInterval(gameState.timerInterval);
+            gameState.isPlaying = false;
+            
+            // 計算星星
+            let stars = 1;
+            if (gameState.score >= 1000) stars = 3;
+            else if (gameState.score >= 500) stars = 2;
+
+            // 顯示結果
+            document.getElementById('result-name').textContent = gameState.playerName;
+            document.getElementById('final-score').textContent = gameState.score;
+            
+            // 渲染星星動畫
+            const starsContainer = document.getElementById('stars-container');
+            starsContainer.innerHTML = '';
+            for(let i=0; i<3; i++) {
+                const star = document.createElement('div');
+                star.className = `text-4xl ${i < stars ? 'text-yellow-400' : 'text-gray-300'} fas fa-star transform scale-0`;
+                if(i < stars) star.style.animation = `popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards ${i * 0.2}s`;
+                else star.style.transform = 'scale(1)';
+                starsContainer.appendChild(star);
+            }
+
+            saveScore();
+            showScreen('result');
+        }
+
+        // --- 題目生成邏輯 ---
+        function nextQuestion() {
+            const level = gameState.currentLevel;
+            let qData = {};
+            if (level === 4) {
+                // 綜合題隨機選 1-3 關類型
+                const randomType = Math.floor(Math.random() * 3) + 1;
+                if(randomType === 1) qData = generateLevel1();
+                else if(randomType === 2) qData = generateLevel2();
+                else qData = generateLevel3();
+            } else {
+                if(level === 1) qData = generateLevel1();
+                else if(level === 2) qData = generateLevel2();
+                else if(level === 3) qData = generateLevel3();
+            }
+            renderQuestion(qData);
+        }
+
+        function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+        function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+
+        // 第一關：巨人國 (放大)
+        function generateLevel1() {
+            const type = randInt(1, 3);
+            const items = ["樂高人", "橡皮擦", "手機", "湯匙", "眼鏡"];
+            const item = items[randInt(0, items.length - 1)];
+            
+            if (type === 1) { // 已知原長求放大
+                const base = randInt(2, 9);
+                const scale = [2, 3, 4, 5, 10][randInt(0, 4)];
+                const ans = base * scale;
+                return {
+                    text: `魔法光線！原本 <span class="text-blue-600 text-2xl font-bold">${base}</span> cm 的${item}，被<span class="text-red-500 font-bold">放大 ${scale} 倍</span>，變多長？`,
+                    icon: '🦕',
+                    correct: `${ans} cm`,
+                    options: shuffle([`${ans} cm`, `${base + scale} cm`, `${ans + 10} cm`, `${base * (scale - 1)} cm`])
+                };
+            } else if (type === 2) { // 已知放大後求原長
+                const base = randInt(2, 8);
+                const scale = randInt(2, 5);
+                const final = base * scale;
+                return {
+                    text: `這支${item}被放大 <span class="text-red-500 font-bold">${scale} 倍</span>後是 <span class="text-blue-600 text-2xl font-bold">${final}</span> cm。請問<b>原本</b>多長？`,
+                    icon: '🔙',
+                    correct: `${base} cm`,
+                    options: shuffle([`${base} cm`, `${final - scale} cm`, `${final + scale} cm`, `${base * 2} cm`])
+                };
+            } else { // 求倍數
+                const base = randInt(2, 5);
+                const scale = [2, 3, 4, 5, 8][randInt(0, 4)];
+                const final = base * scale;
+                return {
+                    text: `${item}原本 <span class="text-blue-600 font-bold">${base}</span> cm，現在變成了 <span class="text-blue-600 text-2xl font-bold">${final}</span> cm。這是放大了幾倍？`,
+                    icon: '🔬',
+                    correct: `${scale} 倍`,
+                    options: shuffle([`${scale} 倍`, `${scale + 2} 倍`, `${scale * 2} 倍`, `${final - base} 倍`])
+                };
+            }
+        }
+
+        // 第二關：螞蟻國 (縮小/模型)
+        function generateLevel2() {
+            const type = randInt(1, 3);
+            if (type === 1) { // 比例尺選擇
+                const realM = randInt(5, 10) * 2; 
+                const paperCm = [20, 25, 30][randInt(0, 2)];
+                const ratio = Math.ceil((realM * 100) / paperCm / 10) * 10;
+                return {
+                    text: `牆壁長 <span class="text-blue-600 font-bold">${realM} m</span>，紙寬 <span class="text-blue-600 font-bold">${paperCm} cm</span>。<br>選哪個比例尺能<b>畫得進去</b>？`,
+                    icon: '📐',
+                    correct: `1 : ${ratio + 10}`, // 寬鬆一點
+                    options: shuffle([`1 : ${ratio + 10}`, `1 : 1`, `1 : 5`, `1 : ${Math.floor(ratio/2)}`])
+                };
+            } else if (type === 2) { // 模型長度
+                let realM = randInt(4, 8);
+                let scale = [20, 40, 50][randInt(0, 2)];
+                let modelCm = (realM * 100) / scale;
+                // 確保整除
+                while(modelCm % 1 !== 0) { realM = randInt(4, 8); modelCm = (realM * 100) / scale; }
+                return {
+                    text: `真車長 <span class="text-blue-600 font-bold">${realM} m</span>，做成 <span class="text-green-600 font-bold">1 : ${scale}</span> 的模型。<br>模型車有多長？`,
+                    icon: '🏎️',
+                    correct: `${modelCm} cm`,
+                    options: shuffle([`${modelCm} cm`, `${modelCm * 10} cm`, `${realM} cm`, `${modelCm / 2} cm`])
+                };
+            } else { // 影印縮小
+                const w = randInt(20, 60);
+                const ratioText = ["1/2", "1/4", "1/5"][randInt(0, 2)];
+                const val = eval(ratioText);
+                const ans = w * val;
+                // 確保整除
+                if (ans % 1 !== 0) return generateLevel2(); // 重骰
+                return {
+                    text: `影印機按下「縮小 <span class="text-green-600 font-bold text-2xl">${ratioText}</span>」。<br>原本寬 ${w} cm 的圖案，印出來變多寬？`,
+                    icon: '🖨️',
+                    correct: `${ans} cm`,
+                    options: shuffle([`${ans} cm`, `${ans * 2} cm`, `${w} cm`, `${w - 10} cm`])
+                };
+            }
+        }
+
+        // 第三關：錯誤實驗室 (地圖/實測) - 強化為快速判斷題
+        function generateLevel3() {
+            const type = randInt(1, 3);
+            if (type === 1) { // 圖上找實際
+                const scale = [100, 200, 500][randInt(0, 2)];
+                const mapCm = randInt(3, 9);
+                const actualM = (mapCm * scale) / 100;
+                return {
+                    text: `【地圖實測】比例尺 <span class="text-purple-600 font-bold">1 : ${scale}</span>，量出 <span class="text-purple-600 font-bold text-2xl">${mapCm} cm</span>。<br>實際距離是？`,
+                    icon: '🗺️',
+                    correct: `${actualM} m`,
+                    options: shuffle([`${actualM} m`, `${actualM * 100} m`, `${mapCm} m`, `${actualM / 10} m`])
+                };
+            } else if (type === 2) { // 實際找圖上
+                const km = randInt(1, 4);
+                const scale = 50000;
+                const mapCm = (km * 100000) / scale;
+                return {
+                    text: `【繪圖任務】實際 <span class="text-blue-600 font-bold">${km} km</span>，用 <span class="text-purple-600 font-bold">1 : 50000</span> 的地圖畫。<br>圖上要畫幾公分？`,
+                    icon: '✏️',
+                    correct: `${mapCm} cm`,
+                    options: shuffle([`${mapCm} cm`, `${mapCm * 10} cm`, `${km} cm`, `50 cm`])
+                };
+            } else { // 比例尺配對 (替代原本的 Matching Game，改為快速判斷)
+                const realM = randInt(10, 50);
+                const mapCm = randInt(2, 5);
+                const correctScale = (realM * 100) / mapCm;
+                // 確保是漂亮數字
+                if (correctScale % 100 !== 0) return generateLevel3();
+
+                return {
+                    text: `【偵探題】這張地圖破了！<br>圖上 <span class="text-purple-600 font-bold">${mapCm} cm</span> 代表實際 <span class="text-blue-600 font-bold text-2xl">${realM} m</span>。<br>請問這張地圖的比例尺是？`,
+                    icon: '🔍',
+                    correct: `1 : ${correctScale}`,
+                    options: shuffle([`1 : ${correctScale}`, `1 : ${correctScale/10}`, `1 : 100`, `1 : 1000`])
+                };
+            }
+        }
+
+        // --- 核心互動邏輯 ---
+        function renderQuestion(qData) {
+            document.getElementById('question-text').innerHTML = qData.text;
+            document.getElementById('question-image').textContent = qData.icon;
+            
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = ''; // 清空
+            
+            qData.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "bg-white hover:bg-blue-50 text-blue-800 font-bold py-3 px-2 md:py-4 md:px-2 rounded-xl border-b-4 border-blue-200 active:border-b-0 active:mt-1 transition-all text-base md:text-lg shadow-sm w-full h-full flex items-center justify-center leading-tight";
+                btn.innerHTML = opt;
+                
+                // 綁定點擊事件
+                btn.onclick = (e) => checkAnswer(opt, qData.correct, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct, btnElement) {
+            // 鎖定所有按鈕
+            const allBtns = document.getElementById('options-grid').children;
+            for(let btn of allBtns) btn.disabled = true;
+
+            if (selected === correct) {
+                // 答對邏輯
+                btnElement.className = "bg-green-500 text-white font-bold py-3 px-2 md:py-4 md:px-2 rounded-xl border-b-4 border-green-700 shadow-lg w-full h-full flex items-center justify-center animate-pulse text-base md:text-lg";
+                btnElement.innerHTML += ' <i class="fas fa-check-circle ml-2"></i>';
+                
+                gameState.combo++;
+                showComboEffect(gameState.combo);
+
+                let points = 100 + (gameState.combo > 1 ? (gameState.combo * 20) : 0);
+                if (gameState.difficulty === 'hard') points = Math.floor(points * 1.5);
+                
+                gameState.score += points;
+                gameState.timeLeft += 2; // 時間獎勵
+                
+            } else {
+                // 答錯邏輯
+                btnElement.className = "bg-red-500 text-white font-bold py-3 px-2 md:py-4 md:px-2 rounded-xl border-b-4 border-red-700 shadow-lg w-full h-full flex items-center justify-center shake text-base md:text-lg";
+                gameState.combo = 0; // Combo 中斷
+                
+                // 顯示正確答案
+                for(let btn of allBtns) {
+                    if(btn.textContent.includes(correct.replace(/<[^>]*>?/gm, '').split(' ')[0])) { 
+                        btn.classList.add('bg-green-100', 'border-green-400', 'text-green-800');
+                    }
+                }
+            }
+            updateUI();
+            
+            // 自動換題
+            setTimeout(() => {
+                if(gameState.isPlaying) nextQuestion();
+            }, 1000);
+        }
+
+        function showComboEffect(count) {
+            if(count < 2) return;
+            const container = document.getElementById('combo-container');
+            const el = document.createElement('div');
+            el.className = 'combo-text text-4xl md:text-6xl';
+            el.innerHTML = `Combo x${count}!`;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').textContent = gameState.score;
+            const timerEl = document.getElementById('timer-display');
+            timerEl.textContent = gameState.timeLeft;
+            
+            if(gameState.timeLeft < 10) {
+                timerEl.classList.add('bg-red-600', 'animate-pulse');
+                timerEl.classList.remove('bg-blue-800');
+            } else {
+                timerEl.classList.remove('bg-red-600', 'animate-pulse');
+                timerEl.classList.add('bg-blue-800');
+            }
+        }
+
+        // --- 排行榜 & 儲存 ---
+        function saveScore() {
+            leaderboard.push({
+                name: gameState.playerName,
+                score: gameState.score,
+                level: gameState.currentLevel,
+                date: new Date().toLocaleDateString()
+            });
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard = leaderboard.slice(0, 10);
+            localStorage.setItem('jessieMathLeaderboard', JSON.stringify(leaderboard));
+        }
+
+        function renderLeaderboard() {
+            const list = document.getElementById('leaderboard-list');
+            if (leaderboard.length === 0) {
+                list.innerHTML = '<li class="text-center text-gray-400 py-4">暫無紀錄，快來挑戰！</li>';
+                return;
+            }
+            list.innerHTML = leaderboard.map((entry, index) => {
+                let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `<span class="text-gray-400 w-6 text-center inline-block">${index+1}</span>`;
+                return `<li class="flex justify-between items-center border-b border-gray-100 py-2 last:border-0">
+                    <div class="flex items-center">
+                        <span class="mr-2 text-lg">${medal}</span>
+                        <span class="font-medium text-gray-700 truncate max-w-[100px]">${entry.name}</span>
+                        <span class="ml-2 text-[10px] text-gray-400 bg-gray-100 px-1 rounded">L${entry.level}</span>
+                    </div>
+                    <span class="font-bold text-blue-600 font-mono">${entry.score}</span>
+                </li>`;
+            }).join('');
+        }
+
+        // --- 初始化功能 ---
+        function showInstructions() { document.getElementById('instruction-modal').classList.remove('hidden'); }
+        function hideInstructions() { document.getElementById('instruction-modal').classList.add('hidden'); }
+    </script>
+</body>
+</html>
